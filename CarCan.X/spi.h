@@ -32,7 +32,7 @@
 #define	SPI_H
 
 #include <xc.h> // include processor files - each processor file is guarded.  
-int8_t SpiInit(uint8_t mikroBusNr);
+//int8_t SpiInit(uint8_t mikroBusNr);
 int8_t SpiTransfer(uint8_t * txPtr, uint8_t * rxPtr, uint16_t size);
 
 

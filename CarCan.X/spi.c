@@ -22,11 +22,10 @@
 
 #include <stdint.h>
 
-volatile uint8_t * ptrCS_SPI;
-uint8_t csBitNr;
+#include "mcc_generated_files/pin_manager.h"
 
-uint8_t  mikroNr=0;
-int8_t SpiInit(uint8_t mikroBusNr)
+
+/*int8_t SpiInit(uint8_t mikroBusNr)
 {
   if((mikroBusNr > 5) | (mikroBusNr < 1))
     return -1;
@@ -90,13 +89,13 @@ int8_t SpiInit(uint8_t mikroBusNr)
   // ---------------------------------------------------------------------------
   // inits MSSP for communication
   // ---------------------------------------------------------------------------
-  if(mikroBusNr < 4)              // MSSP2 is used in this case
-  {
+  //if(mikroBusNr < 4)              // MSSP2 is used in this case
+  //{
     SSP2STATbits.CKE = 1;         // clock phase
     SSP2CON1bits.CKP = 0;         // clock is active high
     SSP2CON1bits.SSPEN = 1;       // enable serial port
     SSP2CON1bits.SSPM = 0b0000;   // SPI clock is 4MHz (Fosc/16)
-  }
+  //}
   else                            // MSSP1 (caution with touch)
   {
     SSP1STATbits.CKE = 1;         // clock phase
@@ -105,33 +104,27 @@ int8_t SpiInit(uint8_t mikroBusNr)
     SSP1CON1bits.SSPM = 0b0000;   // SPI clock is 4MHz (Fosc/16)
   }
   return 0;
-}
+}*/
 
 int8_t SpiTransfer(uint8_t * txPtr, uint8_t * rxPtr, uint16_t size)
 {
   volatile uint8_t dummy;
-  *ptrCS_SPI &= ~(1 << csBitNr);                     // activate chip select
+  nCS_SetLow();
+    
   while(size > 0)
   {
-    if(mikroNr < 4)               // MSSP2 is used
-    {
-      //SSP2STATbits.BF = 0;        // clear transfer flag
+      SSP2STATbits.BF = 0;        // clear transfer flag
       dummy = SSP2BUF;
       SSP2BUF = *txPtr;           // send data
       while(SSP2STATbits.BF == 0){}
       *rxPtr = SSP2BUF;           // get received data
-    }
-    else                          // MSSP1 is used
-    {
-      SSP2STATbits.BF = 0;         // clear transfer flag
-      SSP1BUF = *txPtr;           // send data
-      while(SSP1STATbits.BF == 0){}
-      *rxPtr = SSP1BUF;           // get received data
-    }
     txPtr++;                      // increment tx pointer
     rxPtr++;                      // increment rx pointer
     size--;                       // decrement bytes counter
   };
-  *ptrCS_SPI |= (1 << csBitNr);                     // deactivate chip select
+
+
+nCS_SetHigh();
+
   return 0;
 }

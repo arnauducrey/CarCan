@@ -4,9 +4,15 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <logicalFolder name="lcd" displayName="lcd" projectFiles="true">
-        <itemPath>lcd/lcd.h</itemPath>
-        <itemPath>lcd/ssd1963_cmd.h</itemPath>
+      <logicalFolder name="MCC Generated Files"
+                     displayName="MCC Generated Files"
+                     projectFiles="true">
+        <itemPath>mcc_generated_files/pin_manager.h</itemPath>
+        <itemPath>mcc_generated_files/mcc.h</itemPath>
+        <itemPath>mcc_generated_files/interrupt_manager.h</itemPath>
+        <itemPath>mcc_generated_files/tmr0.h</itemPath>
+        <itemPath>mcc_generated_files/spi2.h</itemPath>
+        <itemPath>mcc_generated_files/device_config.h</itemPath>
       </logicalFolder>
       <itemPath>can.h</itemPath>
       <itemPath>can_defines.h</itemPath>
@@ -21,11 +27,19 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="lcd" displayName="lcd" projectFiles="true">
-        <itemPath>lcd/lcd.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="MCC Generated Files"
+                     displayName="MCC Generated Files"
+                     projectFiles="true">
+        <itemPath>mcc_generated_files/spi2.c</itemPath>
+        <itemPath>mcc_generated_files/interrupt_manager.c</itemPath>
+        <itemPath>mcc_generated_files/tmr0.c</itemPath>
+        <itemPath>mcc_generated_files/pin_manager.c</itemPath>
+        <itemPath>mcc_generated_files/mcc.c</itemPath>
+        <itemPath>mcc_generated_files/device_config.c</itemPath>
       </logicalFolder>
       <itemPath>Makefile</itemPath>
       <itemPath>can.c</itemPath>
-      <itemPath>conf_bits.c</itemPath>
       <itemPath>main.c</itemPath>
       <itemPath>spi.c</itemPath>
     </logicalFolder>
@@ -33,6 +47,7 @@
                    displayName="Important Files"
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
+      <itemPath>CarCan.mc3</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>

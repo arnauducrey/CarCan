@@ -231,7 +231,6 @@ int8_t DRV_CANFDSPI_Reset(uint8_t mikroBusNr)
     // Compose command
     spiTransmitBuffer[0] = (uint8_t) (cINSTRUCTION_RESET << 4);
     spiTransmitBuffer[1] = 0;
-    SpiInit(mikroBusNr);
     spiTransferError = SpiTransfer(spiTransmitBuffer, spiReceiveBuffer, spiTransferSize);
 
     return spiTransferError;
