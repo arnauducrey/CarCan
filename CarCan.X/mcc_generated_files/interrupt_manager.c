@@ -49,6 +49,8 @@
 #include "interrupt_manager.h"
 #include "mcc.h"
 
+uint8_t tenMs=0;
+
 void  INTERRUPT_Initialize (void)
 {
     // Disable Interrupt Priority Vectors (16CXXX Compatibility Mode)
@@ -61,6 +63,7 @@ void __interrupt() INTERRUPT_InterruptManager (void)
     if(INTCONbits.TMR0IE == 1 && INTCONbits.TMR0IF == 1)
     {
         TMR0_ISR();
+        tenMs++;
     }
     else
     {

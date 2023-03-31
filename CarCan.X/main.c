@@ -43,7 +43,13 @@
     
 #include "mcc_generated_files/mcc.h"
 #include "can_defines.h"
-#include "can.h"    
+#include "can.h" 
+#include "car.h"
+
+
+CARSTATE myCar;
+CARSTATE myOldCar;
+
 /*
                          Main application
  */
@@ -57,7 +63,7 @@ void main(void)
     // Use the following macros to:
 
     // Enable the Global Interrupts
-    //INTERRUPT_GlobalInterruptEnable();
+    INTERRUPT_GlobalInterruptEnable();
 
     // Disable the Global Interrupts
     //INTERRUPT_GlobalInterruptDisable();
@@ -69,6 +75,8 @@ void main(void)
     //INTERRUPT_PeripheralInterruptDisable();
     
     CanInit(1,CAN_250K_500K);
+    initialiseCar(&myCar);
+    initialiseCar(&myOldCar);
 
     CAN_FILTEROBJ_ID fObj;
     fObj.ID = 0xFF;
@@ -93,33 +101,28 @@ void main(void)
     txObj.bF.ctrl.BRS = 0; 
     txObj.bF.ctrl.ESI = 0;
     CanSend(&txObj, txd);
-    volatile uint8_t data;
     //Set filter
     CAN_RX_MSGOBJ rxObj; 
-        uint8_t rxd[8];
-        while(CanReceive(&rxObj, rxd) != 0) {}
+    uint8_t rxd[8];
+    while(CanReceive(&rxObj, rxd) != 0) {}
 
-    
+    myCar.carId = rxd[0];
     fObj.ID = rxd[0];
     mObj.MID = 0x00F;
     CanSetFilter(CAN_FILTER0, &fObj, &mObj);
+    //TMR0_SetInterruptHandler(compaereAndUptadeCar);
     while (1)
     {
         // Add your application code
         CAN_RX_MSGOBJ rxObj; 
-        uint8_t rxd[8];
-        if(CanReceive(&rxObj, rxd) == 0) {
-            switch(rxObj.bF.id.ID >> 4) 
-            {
-                case 0x06:
-                    
-                    data = rxd[0]; 
-                    break;
-                default:
-                    data = -1;
-            }
-            data = 0;
-        }  
+        updateCarstate(&myCar,rxObj);
+        if(tenMs == 2){
+            compaereAndUptadeCar(&myCar, &myOldCar);
+            tenMs = 0;
+            //myOldCar = myCar;
+        }
+        
+        //compaereAndUptadeCar(&myCar, &myOldCar);
     }
 }
 /**

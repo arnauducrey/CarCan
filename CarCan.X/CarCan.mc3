@@ -52,7 +52,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="INTERNAL OSCILLATOR" name="CustomFOSC"/>
-         <value>EC oscillator, PLL enabled and under software control, CLKO function on OSC2</value>
+         <value>HS oscillator, PLL enabled and under software control</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="INTERNAL OSCILLATOR" name="CustomSCS"/>
@@ -4972,7 +4972,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="System Module" registerAlias="CONFIG2L"/>
-         <value>199</value>
+         <value>197</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="System Module" registerAlias="CONFIG3H"/>
@@ -5012,7 +5012,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="System Module" registerAlias="CONFIG2L" settingAlias="FOSC"/>
-         <value>ECPLL</value>
+         <value>HSPLL</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="System Module" registerAlias="CONFIG2L" settingAlias="FOSC2"/>
@@ -5250,7 +5250,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\device_config.c</file>
-         <hash>f50eca2f7bd8e116917eece60fc00ff41832e9059b92a6e13db2b86b2a43da07</hash>
+         <hash>ce881e01ee5085594984832474cb2d8575e0ad0a7767bc9ba2e80d907b4c9bfd</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\device_config.h</file>
