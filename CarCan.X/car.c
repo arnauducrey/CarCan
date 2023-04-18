@@ -10,6 +10,8 @@
 #include "car.h"
 #include "can_defines.h"
 #include "can.h" 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 #define LIGHTFRONT 0x11
 #define LIGHTBACK 0x12
@@ -49,7 +51,7 @@ void initialiseCar(CARSTATE *car) {
     car->motorVolume = 0;
     car->driveWheel = 1;
     car->alreadyStarted = 0;
-    car->accelPedalHold = 0;
+    car->startStop = 0;
 }
 
 void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj) {
@@ -111,21 +113,23 @@ void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj) {
 }
 
 void sendLightFront(CARSTATE *car, uint8_t val) {
-        CAN_TX_MSGOBJ txObj;
-        uint8_t txd[1] = {val};
-        txObj.bF.id.ID = (LIGHTFRONT << 4) + car->carId;
-        txObj.bF.ctrl.DLC = CAN_DLC_1;
-        txObj.bF.ctrl.RTR = 0;
-        txObj.bF.id.SID11 = 0;
-        txObj.bF.ctrl.FDF = 0;
-        txObj.bF.ctrl.IDE = 0;
-        txObj.bF.ctrl.BRS = 0;
-        txObj.bF.ctrl.ESI = 0;
-        CanSend(&txObj, txd);
-        car->frontLight = val;
+    CAN_TX_MSGOBJ txObj;
+    uint8_t txd[1] = {val};
+    txObj.bF.id.ID = (LIGHTFRONT << 4) + car->carId;
+    txObj.bF.ctrl.DLC = CAN_DLC_1;
+    txObj.bF.ctrl.RTR = 0;
+    txObj.bF.id.SID11 = 0;
+    txObj.bF.ctrl.FDF = 0;
+    txObj.bF.ctrl.IDE = 0;
+    txObj.bF.ctrl.BRS = 0;
+    txObj.bF.ctrl.ESI = 0;
+    CanSend(&txObj, txd);
+    car->frontLight = val;
 }
 
 void sendLightBack(CARSTATE *car, uint8_t val) {
+    static uint8_t lastVal = 0;
+    if (lastVal != val) {
         CAN_TX_MSGOBJ txObj;
         uint8_t txd[1] = {val};
         txObj.bF.id.ID = (LIGHTBACK << 4) + car->carId;
@@ -138,6 +142,8 @@ void sendLightBack(CARSTATE *car, uint8_t val) {
         txObj.bF.ctrl.ESI = 0;
         CanSend(&txObj, txd);
         car->backLight = val;
+        lastVal = val;
+    }
 }
 
 void sendTime(CARSTATE *car, uint8_t hour, uint8_t minute, uint8_t colon) {
@@ -158,22 +164,24 @@ void sendTime(CARSTATE *car, uint8_t hour, uint8_t minute, uint8_t colon) {
 }
 
 void sendGearLevel(CARSTATE *car, uint8_t value) {
-        CAN_TX_MSGOBJ txObj;
-        uint8_t txd[1] = {value};
-        txObj.bF.id.ID = (GEARLEVEL << 4) + car->carId;
-        txObj.bF.ctrl.DLC = CAN_DLC_1;
-        txObj.bF.ctrl.RTR = 0;
-        txObj.bF.id.SID11 = 0;
-        txObj.bF.ctrl.FDF = 0;
-        txObj.bF.ctrl.IDE = 0;
-        txObj.bF.ctrl.BRS = 0;
-        txObj.bF.ctrl.ESI = 0;
-        CanSend(&txObj, txd);
-        car->gearLevel = value;
+    CAN_TX_MSGOBJ txObj;
+    uint8_t txd[1] = {value};
+    txObj.bF.id.ID = (GEARLEVEL << 4) + car->carId;
+    txObj.bF.ctrl.DLC = CAN_DLC_1;
+    txObj.bF.ctrl.RTR = 0;
+    txObj.bF.id.SID11 = 0;
+    txObj.bF.ctrl.FDF = 0;
+    txObj.bF.ctrl.IDE = 0;
+    txObj.bF.ctrl.BRS = 0;
+    txObj.bF.ctrl.ESI = 0;
+    CanSend(&txObj, txd);
+    car->gearLevel = value;
 }
 
-void sendPwrMotor(CARSTATE *car, CARSTATE *oldCar, uint8_t percentage, uint8_t starter) {
-    if ((car->accelPedal != oldCar->accelPedal) || (car->alreadyStarted == 0) || (car->accelPedalHold == 1)) {
+void sendPwrMotor(CARSTATE *car, uint8_t percentage, uint8_t starter) {
+    static uint8_t lastPercent = 0;
+    static uint8_t lastStarter = 0;
+    if ((lastPercent != percentage) || (lastStarter != starter)) {
         CAN_TX_MSGOBJ txObj;
         uint8_t txd[2] = {percentage, starter};
         txObj.bF.id.ID = (PWRMOTOR << 4) + car->carId;
@@ -185,13 +193,17 @@ void sendPwrMotor(CARSTATE *car, CARSTATE *oldCar, uint8_t percentage, uint8_t s
         txObj.bF.ctrl.BRS = 0;
         txObj.bF.ctrl.ESI = 0;
         CanSend(&txObj, txd);
-        car->accelPedal = percentage;
+        lastPercent = percentage;
+        lastStarter = starter;
     }
 }
 
 void sendPwrBreak(CARSTATE *car, uint8_t percentage) {
+    static uint8_t lastPercent = 0;
+    if (lastPercent != percentage) {
         CAN_TX_MSGOBJ txObj;
-        uint8_t txd[1] = {percentage};
+        uint8_t txd[1];
+        txd[0] = percentage;
         txObj.bF.id.ID = (PWRBREAK << 4) + car->carId;
         txObj.bF.ctrl.DLC = CAN_DLC_1;
         txObj.bF.ctrl.RTR = 0;
@@ -201,7 +213,8 @@ void sendPwrBreak(CARSTATE *car, uint8_t percentage) {
         txObj.bF.ctrl.BRS = 0;
         txObj.bF.ctrl.ESI = 0;
         CanSend(&txObj, txd);
-        car->breakPedal = percentage;
+        lastPercent = percentage;
+    }
 }
 
 void sendTempoOff(CARSTATE *car) {
@@ -293,22 +306,22 @@ void getSteeringPosition(CARSTATE *car) {
     CanSend(&txObj, txd);
 }
 
-void startEngine(CARSTATE *car, CARSTATE *oldCar) {
+void startEngine(CARSTATE *car) {
     if (car->rpm == 0) {
-        sendPwrMotor(car, oldCar, 12, 1);
+        sendPwrMotor(car, 12, 1);
     } else {
-        sendPwrMotor(car, oldCar, 12, 0);
+        sendPwrMotor(car, 12, 0);
     }
     sendLightFront(car, 50);
     sendLightBack(car, 50);
     car->alreadyStarted = 1;
 }
 
-void resetCar(CARSTATE *car, CARSTATE *oldCar) {
+void resetCar(CARSTATE *car) {
     car->alreadyStarted = 0;
     sendLightBack(car, 0);
     sendLightFront(car, 0);
-    sendPwrMotor(car, oldCar, 0, 0);
+    sendPwrMotor(car, 0, 0);
     car->accelPedal = 0;
     car->backLight = 0;
     car->breakPedal = 0;
@@ -331,63 +344,71 @@ void resetCar(CARSTATE *car, CARSTATE *oldCar) {
     car->steeringAuto = 0;
     car->motorVolume = 0;
     car->driveWheel = 1;
-    car->accelPedalHold = 0;
+    car->startStop = 0;
 }
 
-void compaereAndUptadeCar(CARSTATE *car, CARSTATE *oldCar) {
-    /*if (car->contactKey == 1) {
-        //Detection of the car turning on
-        if (oldCar->contactKey == 0) {
-            startEngine(car, oldCar);
-        } /*else {
-
-            //Management of gas pedal
-            if (car->accelPedal == oldCar->accelPedal) {
-                car->accelPedalHold = 1;
-                if (car->rpm < 6500) {
-                    if (car->rpm != 0) {
-                        sendPwrMotor(car, oldCar, car->accelPedal, 0);
-                    } else {
-                        sendPwrMotor(car, oldCar, car->accelPedal, 1);
-                    }
-                } else {
-                    sendPwrMotor(car, oldCar, car->accelPedal / 2, 0);
-                }
-            } else {
-                car->accelPedalHold = 0;
-            }
-        }
-        //Management of break pedal
-        /*if(car->breakPedal =! oldCar->breakPedal){
-            sendPwrMotor(car,car->breakPedal, 0);
-        }
-
-    } else if (oldCar->contactKey == 1) { //Detection of the car turning off
-        resetCar(car,oldCar);
+void breakManagement(CARSTATE *car) {
+    //Break mamagement
+    sendPwrBreak(car, car->breakPedal);
+    if (car->breakPedal > 20) {
+        sendLightBack(car, 100);
+    } else {
+        sendLightBack(car, 50);
     }
-     */       
-    if(car->contactKey == 1){
-        if(car->alreadyStarted == 0){
-            startEngine(car, oldCar);
+}
+
+void gazManagement(CARSTATE *car) {
+    //Management of gas pedal
+    if (car->rpm < 6500) {
+        if (car->rpm != 0) {
+            sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
         } else {
-            //Management of gas pedal
-            if ((car->accelPedal == oldCar->accelPedal) && (car->accelPedal != 0)) { //CE IF FAIT TOUT PLANTER
-                car->accelPedalHold = 1;
-                if (car->rpm < 6500) {
-                    if (car->rpm != 0) {
-                        sendPwrMotor(car, oldCar, car->accelPedal, 0);
-                    } else {
-                        sendPwrMotor(car, oldCar, car->accelPedal, 1);
-                    }
-                } else {
-                    sendPwrMotor(car, oldCar, car->accelPedal / 2, 0);
-                }
+            sendPwrMotor(car, MAX(car->accelPedal, 12), 1);
+        }
+    } else {
+        sendPwrMotor(car, car->accelPedal - 20, 0);
+    }
+}
+
+void compaereAndUptadeCar(CARSTATE *car) {
+
+    if (car->contactKey == 1) {
+        //Management of first start
+        if (car->gearSelected == 'P') {
+            breakManagement(car);
+            if (car->alreadyStarted == 0) {
+                startEngine(car);
             } else {
-                car->accelPedalHold = 0;
+                gazManagement(car);
             }
         }
-    } else if(car->alreadyStarted == 1) {
-        resetCar(car,oldCar);
+
+        //Gear management
+        if (car->gearSelected == 'D') {
+            if ((car->gearLevel == 0) && (car->accelPedal > 20)) {
+                if (car->startStop == 1) {
+                    sendPwrMotor(car, 12, 1);
+                    car->startStop = 0;
+                }else{
+                 sendGearLevel(car, 1);   
+                }
+            } else if (car->gearLevel != 0) {
+                sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
+                breakManagement(car);
+                if ((car->rpm > 5500) && (car->gearLevel != 5)) {
+                    sendGearLevel(car, car->gearLevel + 1);
+                } else if ((car->rpm < 2000) && (car->gearLevel != 1)) {
+                    sendGearLevel(car, car->gearLevel - 1);
+                } else if ((car->speed < 20) && (car->breakPedal > 20)) {
+                    sendGearLevel(car, 0);
+                    sendPwrMotor(car, 0, 0);
+                    car->startStop = 1;
+                }
+            } else {
+                sendPwrBreak(car, 100);
+            }
+        }
+    } else if (car->alreadyStarted == 1) {
+        resetCar(car);
     }
-    *oldCar = *car;
 }

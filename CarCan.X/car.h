@@ -23,6 +23,7 @@
         uint8_t contactKey;
         int8_t steeringPosition;
         uint8_t steeringAuto;
+        uint8_t startStop;
         uint8_t driveMode;
         uint8_t carId;
         uint8_t frontLight;
@@ -34,7 +35,6 @@
         uint8_t motorVolume;
         uint8_t driveWheel;
         uint8_t alreadyStarted;
-        uint8_t accelPedalHold;
         
     } CARSTATE;
     
@@ -45,7 +45,7 @@
     void sendLightBack(CARSTATE *car,uint8_t val);
     void sendTime(CARSTATE *car,uint8_t hour, uint8_t minute, uint8_t colon);
     void sendGearLevel(CARSTATE *car,uint8_t value);
-    void sendPwrMotor(CARSTATE *car,CARSTATE *oldCar,uint8_t percentage, uint8_t starter);
+    void sendPwrMotor(CARSTATE *car,uint8_t percentage, uint8_t starter);
     void sendPwrBreak(CARSTATE *car,uint8_t percentage);
     void sendTempoOff(CARSTATE *car);
     void sendKmPulse(CARSTATE *car);
@@ -54,8 +54,10 @@
     void getFrontSens(CARSTATE *car);
     void getSteeringPosition(CARSTATE *car);
     
-    void compaereAndUptadeCar(CARSTATE *car, CARSTATE *oldCar);
-    void startEngine(CARSTATE *car, CARSTATE *oldCar);
-    void resetCar(CARSTATE *car, CARSTATE *oldCar);
+    void compaereAndUptadeCar(CARSTATE *car);
+    void startEngine(CARSTATE *car);
+    void resetCar(CARSTATE *car);
+    void breakManagement(CARSTATE *car);
+    void gazManagement(CARSTATE *car);
 
 #endif

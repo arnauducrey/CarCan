@@ -48,7 +48,6 @@
 
 
 CARSTATE myCar;
-CARSTATE myOldCar;
 
 /*
                          Main application
@@ -76,7 +75,7 @@ void main(void)
     
     CanInit(1,CAN_250K_500K);
     initialiseCar(&myCar);
-    initialiseCar(&myOldCar);
+
 
     CAN_FILTEROBJ_ID fObj;
     fObj.ID = 0xFF;
@@ -116,8 +115,8 @@ void main(void)
         // Add your application code
         CAN_RX_MSGOBJ rxObj; 
         updateCarstate(&myCar,rxObj);
-        if(tenMs == 2){
-            compaereAndUptadeCar(&myCar, &myOldCar);
+        if(tenMs == 6){
+            compaereAndUptadeCar(&myCar);
             tenMs = 0;
             //myOldCar = myCar;
         }
