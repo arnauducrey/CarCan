@@ -62,5 +62,6 @@
     void resetCar(CARSTATE *car);
     void breakManagement(CARSTATE *car);
     void gazManagement(CARSTATE *car);
+    void calculateKm(CARSTATE *car);
 
 #endif

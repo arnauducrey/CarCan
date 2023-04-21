@@ -384,8 +384,18 @@ void compaereAndUptadeCar(CARSTATE *car) {
             breakManagement(car);
             if (car->alreadyStarted == 0) {
                 startEngine(car);
+            } else if (car->accelPedal > 20) {
+                if (car->startStop == 1) {
+                    sendPwrMotor(car, 12, 1);
+                    car->startStop = 0;
+                } else {
+                    gazManagement(car);
+                }
             } else {
-                gazManagement(car);
+                if (car->breakPedal > 20) {
+                    sendPwrMotor(car, 0, 0);
+                    car->startStop = 1;
+                }
             }
         }
 
@@ -398,7 +408,7 @@ void compaereAndUptadeCar(CARSTATE *car) {
                 } else {
                     gazManagement(car);
                 }
-            } else{
+            } else {
                 if ((car->speed < 5) && (car->breakPedal > 20)) {
                     sendPwrMotor(car, 0, 0);
                     car->startStop = 1;
@@ -416,10 +426,10 @@ void compaereAndUptadeCar(CARSTATE *car) {
                 }
             } else if (car->gearLevel != 0) {
                 if (car->rpm > 5500) {
-                        sendPwrMotor(car, 50, 0);
-                    } else {
-                        sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
-                    }
+                    sendPwrMotor(car, 50, 0);
+                } else {
+                    sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
+                }
                 breakManagement(car);
                 if ((car->speed < 5) && (car->breakPedal > 20)) {
                     sendGearLevel(car, 0);
@@ -437,7 +447,7 @@ void compaereAndUptadeCar(CARSTATE *car) {
                 if ((car->startStop == 1)&& (car->rpm == 0)) {
                     sendPwrMotor(car, 12, 1);
                     car->startStop = 0;
-                    sendPwrBreak(car,0);
+                    sendPwrBreak(car, 0);
                 } else {
                     sendGearLevel(car, 1);
                 }
@@ -464,10 +474,10 @@ void compaereAndUptadeCar(CARSTATE *car) {
                     }
                 }
 
-                if(car->breakPedal > 20){
+                if (car->breakPedal > 20) {
                     breakManagement(car);
                 }
-                
+
                 if ((car->rpm > 5500) && (car->gearLevel != 5)) {
                     sendGearLevel(car, car->gearLevel + 1);
                 } else if ((car->rpm < 2000) && (car->gearLevel != 1)) {
@@ -484,4 +494,8 @@ void compaereAndUptadeCar(CARSTATE *car) {
     } else if (car->alreadyStarted == 1) {
         resetCar(car);
     }
+}
+
+void calculateKm(CARSTATE *car){
+    
 }
