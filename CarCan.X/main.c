@@ -47,7 +47,6 @@
 #include "car.h"
 
 
-CARSTATE myCar;
 
 /*
                          Main application
@@ -109,19 +108,42 @@ void main(void)
     fObj.ID = rxd[0];
     mObj.MID = 0x00F;
     CanSetFilter(CAN_FILTER0, &fObj, &mObj);
-    //TMR0_SetInterruptHandler(compaereAndUptadeCar);
+    sendTime(&myCar,myCar.hours,myCar.minutes,0);
+    
     while (1)
     {
         // Add your application code
         CAN_RX_MSGOBJ rxObj; 
         updateCarstate(&myCar,rxObj);
-        if(tenMs == 6){
+        if(myCar.count50Ms == 5){
             compaereAndUptadeCar(&myCar);
-            tenMs = 0;
-            //myOldCar = myCar;
+            myCar.count50Ms = 0; 
         }
         
-        //compaereAndUptadeCar(&myCar, &myOldCar);
+        /*if(myCar.count1sec == 100){
+            if(myCar.colon == 1){
+                sendTime(&myCar,myCar.hours,myCar.minutes,0);
+            } else {
+                if(myCar.seconds == 59){
+                    myCar.seconds = 0;
+                    if(myCar.minutes == 59){
+                        myCar.minutes = 0;
+                        if(myCar.hours == 23){
+                            myCar.hours = 0;
+                        } else{
+                            myCar.hours++;
+                        }
+                    } else {
+                        myCar.minutes++;
+                    }
+                } else{
+                    myCar.seconds++;
+                }
+                sendTime(&myCar,myCar.hours,myCar.minutes,1);
+            }
+            myCar.count1sec = 0;
+        }*/
+        
     }
 }
 /**

@@ -109,7 +109,6 @@
     INTERRUPT_Initialize();
  */
 void INTERRUPT_Initialize (void);
-extern uint8_t tenMs;
 
 #endif  // INTERRUPT_MANAGER_H
 /**

@@ -25,6 +25,7 @@
 #define VOLUME 0x15
 #define FRONTSENS 0x03
 #define STEERINGPOS 0x09
+CARSTATE myCar;
 
 void initialiseCar(CARSTATE *car) {
     car->accelPedal = 0;
@@ -38,9 +39,9 @@ void initialiseCar(CARSTATE *car) {
     car->frontSens = 0;
     car->gearLevel = 0;
     car->gearSelected = 'P';
-    car->hours = 0;
+    car->hours = 23;
     car->rpm = 0;
-    car->minutes = 0;
+    car->minutes = 59;
     car->sensLeft = 0;
     car->sensRight = 0;
     car->speed = 0;
@@ -52,6 +53,9 @@ void initialiseCar(CARSTATE *car) {
     car->driveWheel = 1;
     car->alreadyStarted = 0;
     car->startStop = 0;
+    car->count50Ms = 0;
+    car->count1sec = 0;
+    car->seconds = 30;
 }
 
 void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj) {
@@ -345,6 +349,8 @@ void resetCar(CARSTATE *car) {
     car->motorVolume = 0;
     car->driveWheel = 1;
     car->startStop = 0;
+    car->count50Ms = 0;
+    car->count1sec = 0;
 }
 
 void breakManagement(CARSTATE *car) {
@@ -383,18 +389,85 @@ void compaereAndUptadeCar(CARSTATE *car) {
             }
         }
 
-        //Gear management
-        if (car->gearSelected == 'D') {
-            if ((car->gearLevel == 0) && (car->accelPedal > 20)) {
+        if (car->gearSelected == 'N') {
+            breakManagement(car);
+            if (car->accelPedal > 10) {
                 if (car->startStop == 1) {
                     sendPwrMotor(car, 12, 1);
                     car->startStop = 0;
-                }else{
-                 sendGearLevel(car, 1);   
+                } else {
+                    gazManagement(car);
+                }
+            } else{
+                if ((car->speed < 5) && (car->breakPedal > 20)) {
+                    sendPwrMotor(car, 0, 0);
+                    car->startStop = 1;
+                }
+            }
+        }
+
+        if (car->gearSelected == 'R') {
+            if ((car->gearLevel == 0) && (car->accelPedal > 20)) {
+                if ((car->startStop == 1) && (car->rpm == 0)) {
+                    sendPwrMotor(car, 12, 1);
+                    car->startStop = 0;
+                } else {
+                    sendGearLevel(car, 1);
                 }
             } else if (car->gearLevel != 0) {
-                sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
+                if (car->rpm > 5500) {
+                        sendPwrMotor(car, 50, 0);
+                    } else {
+                        sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
+                    }
                 breakManagement(car);
+                if ((car->speed < 5) && (car->breakPedal > 20)) {
+                    sendGearLevel(car, 0);
+                    sendPwrMotor(car, 0, 0);
+                    car->startStop = 1;
+                }
+            } else {
+                sendPwrBreak(car, 100);
+            }
+        }
+
+        //Gear management
+        if (car->gearSelected == 'D') {
+            if ((car->gearLevel == 0) && (car->accelPedal > 20)) {
+                if ((car->startStop == 1)&& (car->rpm == 0)) {
+                    sendPwrMotor(car, 12, 1);
+                    car->startStop = 0;
+                    sendPwrBreak(car,0);
+                } else {
+                    sendGearLevel(car, 1);
+                }
+            } else if (car->gearLevel != 0) {
+                if (car->tempomat == 1) {
+                    if (car->accelPedal > 20) {
+                        sendPwrMotor(car, car->accelPedal, 0);
+                    } else {
+                        if (car->speed > car->tempoSpeed) {
+                            sendPwrMotor(car, 20, 0);
+                        } else {
+                            sendPwrMotor(car, 90, 0);
+                        }
+                        if (car->breakPedal > 20) {
+                            sendTempoOff(car);
+                        }
+                    }
+
+                } else {
+                    if (car->speed > 270) {
+                        sendPwrMotor(car, 50, 0);
+                    } else {
+                        sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
+                    }
+                }
+
+                if(car->breakPedal > 20){
+                    breakManagement(car);
+                }
+                
                 if ((car->rpm > 5500) && (car->gearLevel != 5)) {
                     sendGearLevel(car, car->gearLevel + 1);
                 } else if ((car->rpm < 2000) && (car->gearLevel != 1)) {

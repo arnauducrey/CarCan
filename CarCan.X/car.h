@@ -35,9 +35,12 @@
         uint8_t motorVolume;
         uint8_t driveWheel;
         uint8_t alreadyStarted;
+        uint8_t count1sec;
+        uint8_t count50Ms;
+        uint8_t seconds;
         
     } CARSTATE;
-    
+    extern CARSTATE myCar;
     void initialiseCar(CARSTATE *car);
     void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj);
     
