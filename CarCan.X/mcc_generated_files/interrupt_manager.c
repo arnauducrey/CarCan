@@ -63,7 +63,8 @@ void __interrupt() INTERRUPT_InterruptManager (void)
     {
         INTCONbits.TMR0IF = 0;
         myCar.count1sec++;
-        myCar.count50Ms++;  
+        myCar.count50Ms++; 
+        myCar.count10Ms++;
     }
     else
     {
