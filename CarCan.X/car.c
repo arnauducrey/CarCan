@@ -56,8 +56,6 @@ void initialiseCar(CARSTATE *car) {
     car->count50Ms = 0;
     car->count1sec = 0;
     car->seconds = 30;
-    car->count10Ms = 0;
-    car->distance = 0;
 }
 
 void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj) {
@@ -353,7 +351,6 @@ void resetCar(CARSTATE *car) {
     car->startStop = 0;
     car->count50Ms = 0;
     car->count1sec = 0;
-    car->count10Ms = 0;
 }
 
 void breakManagement(CARSTATE *car) {
@@ -500,9 +497,5 @@ void compaereAndUptadeCar(CARSTATE *car) {
 }
 
 void calculateKm(CARSTATE *car){
-    car->distance += (car->speed*10);
-    while(car->distance >= 36000){
-        sendKmPulse(car);
-        car->distance -= 36000;
-    }
+    
 }

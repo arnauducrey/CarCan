@@ -37,8 +37,6 @@
         uint8_t alreadyStarted;
         uint8_t count1sec;
         uint8_t count50Ms;
-        uint8_t count10Ms;
-        uint16_t distance;
         uint8_t seconds;
         
     } CARSTATE;

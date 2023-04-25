@@ -119,10 +119,6 @@ void main(void)
             compaereAndUptadeCar(&myCar);
             myCar.count50Ms = 0; 
         }
-        if(myCar.count10Ms == 1){
-            calculateKm(&myCar);
-            myCar.count10Ms = 0;
-        }
         
         /*if(myCar.count1sec == 100){
             if(myCar.colon == 1){
