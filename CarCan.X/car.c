@@ -10,6 +10,7 @@
 #include "car.h"
 #include "can_defines.h"
 #include "can.h" 
+#include "mcc_generated_files/mcc.h"
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -56,6 +57,9 @@ void initialiseCar(CARSTATE *car) {
     car->count50Ms = 0;
     car->count1sec = 0;
     car->seconds = 30;
+    car->distance = 0;
+    car->count10Ms = 0;
+    car->count30Ms = 0;
 }
 
 void updateCarstate(CARSTATE *car, CAN_RX_MSGOBJ rxObj) {
@@ -351,11 +355,19 @@ void resetCar(CARSTATE *car) {
     car->startStop = 0;
     car->count50Ms = 0;
     car->count1sec = 0;
+    car->distance = 0;
+    car->count10Ms = 0;
+    car->count30Ms = 0;
 }
 
 void breakManagement(CARSTATE *car) {
     //Break mamagement
-    sendPwrBreak(car, car->breakPedal);
+    if(car->breakPedal > 20){
+        sendPwrBreak(car, car->breakPedal);
+    } else {
+        sendPwrBreak(car, 0);
+    }
+
     if (car->breakPedal > 20) {
         sendLightBack(car, 100);
     } else {
@@ -473,16 +485,13 @@ void compaereAndUptadeCar(CARSTATE *car) {
                         sendPwrMotor(car, MAX(car->accelPedal, 12), 0);
                     }
                 }
-
-                if (car->breakPedal > 20) {
                     breakManagement(car);
-                }
-
+                    __delay_ms(10); // pas sensé etre fait comme ca 
                 if ((car->rpm > 5500) && (car->gearLevel != 5)) {
                     sendGearLevel(car, car->gearLevel + 1);
                 } else if ((car->rpm < 2000) && (car->gearLevel != 1)) {
                     sendGearLevel(car, car->gearLevel - 1);
-                } else if ((car->speed < 20) && (car->breakPedal > 20)) {
+                } else if ((car->speed < 20) && (car->breakPedal > 20) && (car->gearLevel == 1)) {
                     sendGearLevel(car, 0);
                     sendPwrMotor(car, 0, 0);
                     car->startStop = 1;
@@ -497,7 +506,7 @@ void compaereAndUptadeCar(CARSTATE *car) {
 }
 
 void calculateKm(CARSTATE *car) {
-    car->distance += (car->speed * 10);
+    car->distance += (car->speed );
     while (car->distance >= 36000) {
         sendKmPulse(car);
         car->distance -= 36000;

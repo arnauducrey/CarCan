@@ -116,8 +116,31 @@ void main(void) {
             compaereAndUptadeCar(&myCar);
             myCar.count50Ms = 0;
         }
-        
-        /*if(myCar.count1sec == 100){
+        if(myCar.count10Ms == 1){
+            calculateKm(&myCar);
+            myCar.count10Ms = 0;
+        }
+        if(myCar.count30Ms == 3){
+            myCar.count30Ms = 0;
+            if (myCar.driveMode != 0) {
+                static uint8_t lastLeft = 0;
+                static int8_t lastRight = 0;
+                if (myCar.sensLeft < myCar.sensRight) {
+                    lastRight += 7;
+                    sendAutoSteering(&myCar, lastRight, 1);
+                    lastLeft = 0;
+                } else if (myCar.sensLeft > myCar.sensRight) {
+                    lastLeft -= 7;
+                    sendAutoSteering(&myCar, lastLeft, 1);
+                    lastRight = 0;
+                } else {
+                    sendAutoSteering(&myCar, 0, 1);
+                    lastLeft = 0;
+                    lastRight = 0;
+                }
+            }
+        }
+        if(myCar.count1sec == 100){
             if(myCar.colon == 1){
                 sendTime(&myCar,myCar.hours,myCar.minutes,0);
             } else {
@@ -139,7 +162,7 @@ void main(void) {
                 sendTime(&myCar,myCar.hours,myCar.minutes,1);
             }
             myCar.count1sec = 0;
-        }*/
+        }
 
     }
 }
