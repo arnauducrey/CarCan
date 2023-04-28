@@ -40,19 +40,16 @@
     OF FEES, IF ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS 
     SOFTWARE.
  */
-    
+
 #include "mcc_generated_files/mcc.h"
 #include "can_defines.h"
 #include "can.h" 
 #include "car.h"
 
-
-
 /*
                          Main application
  */
-void main(void)
-{
+void main(void) {
     // Initialize the device
     SYSTEM_Initialize();
 
@@ -71,8 +68,8 @@ void main(void)
 
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    
-    CanInit(1,CAN_250K_500K);
+
+    CanInit(1, CAN_250K_500K);
     initialiseCar(&myCar);
 
 
@@ -85,39 +82,39 @@ void main(void)
     mObj.MSID11 = 0;
     mObj.MIDE = 1;
     CanSetFilter(CAN_FILTER0, &fObj, &mObj);
-    
-    
-    
+
+
+
     CAN_TX_MSGOBJ txObj;
-    uint8_t txd[8] = {0,1,2,3,4,5,6,7};
+    uint8_t txd[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     txObj.bF.id.ID = 0xFF;
     txObj.bF.ctrl.DLC = CAN_DLC_0;
     txObj.bF.ctrl.RTR = 1;
     txObj.bF.id.SID11 = 0;
     txObj.bF.ctrl.FDF = 0;
     txObj.bF.ctrl.IDE = 0;
-    txObj.bF.ctrl.BRS = 0; 
+    txObj.bF.ctrl.BRS = 0;
     txObj.bF.ctrl.ESI = 0;
     CanSend(&txObj, txd);
     //Set filter
-    CAN_RX_MSGOBJ rxObj; 
+    CAN_RX_MSGOBJ rxObj;
     uint8_t rxd[8];
-    while(CanReceive(&rxObj, rxd) != 0) {}
+    while (CanReceive(&rxObj, rxd) != 0) {
+    }
 
     myCar.carId = rxd[0];
     fObj.ID = rxd[0];
     mObj.MID = 0x00F;
     CanSetFilter(CAN_FILTER0, &fObj, &mObj);
-    sendTime(&myCar,myCar.hours,myCar.minutes,0);
-    
-    while (1)
-    {
+    sendTime(&myCar, myCar.hours, myCar.minutes, 0);
+
+    while (1) {
         // Add your application code
-        CAN_RX_MSGOBJ rxObj; 
-        updateCarstate(&myCar,rxObj);
-        if(myCar.count50Ms == 5){
+        CAN_RX_MSGOBJ rxObj;
+        updateCarstate(&myCar, rxObj);
+        if (myCar.count50Ms == 5) {
             compaereAndUptadeCar(&myCar);
-            myCar.count50Ms = 0; 
+            myCar.count50Ms = 0;
         }
         
         /*if(myCar.count1sec == 100){
@@ -143,9 +140,9 @@ void main(void)
             }
             myCar.count1sec = 0;
         }*/
-        
+
     }
 }
 /**
  End of File
-*/
+ */

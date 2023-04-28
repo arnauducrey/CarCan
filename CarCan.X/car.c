@@ -496,6 +496,10 @@ void compaereAndUptadeCar(CARSTATE *car) {
     }
 }
 
-void calculateKm(CARSTATE *car){
-    
+void calculateKm(CARSTATE *car) {
+    car->distance += (car->speed * 10);
+    while (car->distance >= 36000) {
+        sendKmPulse(car);
+        car->distance -= 36000;
+    }
 }
